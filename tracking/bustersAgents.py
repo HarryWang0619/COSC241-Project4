@@ -1,17 +1,3 @@
-# bustersAgents.py
-# ----------------
-# Licensing Information:  You are free to use or extend these projects for
-# educational purposes provided that (1) you do not distribute or publish
-# solutions, (2) you retain this notice, and (3) you provide clear
-# attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
-# Attribution Information: The Pacman AI projects were developed at UC Berkeley.
-# The core projects and autograders were primarily created by John DeNero
-# (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
-# Student side autograding was added by Brad Miller, Nick Hay, and
-# Pieter Abbeel (pabbeel@cs.berkeley.edu).
-
-
 import util
 from game import Agent
 from game import Directions
@@ -156,6 +142,10 @@ class GreedyBustersAgent(BustersAgent):
              indices into this list should be 1 less than indices into the
              gameState.getLivingGhosts() list.
         """
+        #should first find most likely position of ghost, then choose action that minimizes distance
+        #to closest ghost.
+        #write code to track down remaining ghosts only
+
         pacmanPosition = gameState.getPacmanPosition()
         legal = [a for a in gameState.getLegalPacmanActions()]
         livingGhosts = gameState.getLivingGhosts()
@@ -163,4 +153,36 @@ class GreedyBustersAgent(BustersAgent):
             [beliefs for i, beliefs in enumerate(self.ghostBeliefs)
              if livingGhosts[i+1]]
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        #out of all the ghosts, find the one closest to pacman's current position
+        #check this code out
+        # closestGhostPosition = None
+        # closetGhostDistance = -1
+        # for belief in livingGhostPositionDistributions:
+        #     temp = 0
+        #     for pos in belief.keys():
+        #         if belief[pos] > temp:
+        #             temp = belief[pos]
+        #             closestGhostDistance = self.distancer.getDistance(pacmanPosition,pos)
+        #             closestGhostPosition = pos
+        closestGhostList = []
+        closestGhostPosition = None
+        closestGhostDistance = -1
+        for belief in livingGhostPositionDistributions:
+            bestPos = belief.argMax()
+            closestGhostList.append(bestPos)
+
+        closestGhostPosition = min(closestGhostList)
+        closestGhostDistance = self.distancer.getDistance(pacmanPosition,closestGhostPosition)
+
+        Dict = {}
+        newDist = []
+        bestAction = None
+        for a in legal:
+            successorPosition = Actions.getSuccessor(pacmanPosition, a)
+            position = self.distancer.getDistance(successorPosition, closestGhostPosition)
+            newDist.append(position)
+            Dict[position] = a
+        minDist = min(newDist)
+        bestAction = Dict[minDist]
+        return bestAction
+        "*** END OF CODE HERE ***"
